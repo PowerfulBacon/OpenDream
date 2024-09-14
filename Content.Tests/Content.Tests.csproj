@@ -35,6 +35,12 @@
     <DMStandard Include="..\DMCompiler\DMStandard\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\Content.IntegrationTests\DMProject\map.dmm" Link="DMProject\map.dmm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <Target Name="CopyDMStandard" AfterTargets="AfterBuild">
     <Copy SourceFiles="@(DMStandard)" DestinationFiles="@(DMStandard->'$(OutDir)\DMStandard\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>

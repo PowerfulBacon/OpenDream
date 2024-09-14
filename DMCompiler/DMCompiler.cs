@@ -28,6 +28,9 @@ public static class DMCompiler {
     private static readonly List<string> _resourceDirectories = new();
     private static DateTime _compileStartTime;
 
+    private static List<CompilerEmission> _emissions = new List<CompilerEmission>();
+    public static IEnumerable<CompilerEmission> Emissions => _emissions;
+
     public static bool Compile(DMCompilerSettings settings) {
         ErrorCount = 0;
         WarningCount = 0;
@@ -35,6 +38,7 @@ public static class DMCompiler {
         if (Settings.Files == null) return false;
         Config.Reset();
         _resourceDirectories.Clear();
+        _emissions.Clear();
 
         //TODO: Only use InvariantCulture where necessary instead of it being the default
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
@@ -187,6 +191,7 @@ public static class DMCompiler {
                 break;
         }
 
+        _emissions.Add(emission);
         Console.WriteLine(emission);
     }
 
@@ -208,7 +213,9 @@ public static class DMCompiler {
 
     /// <inheritdoc cref="ForcedError(string)"/>
     public static void ForcedError(Location loc, string message) {
-        Console.WriteLine(new CompilerEmission(ErrorLevel.Error, loc, message).ToString());
+        CompilerEmission emission = new CompilerEmission(ErrorLevel.Error, loc, message);
+        _emissions.Add(emission);
+        Console.WriteLine(emission);
         ErrorCount++;
     }
 

@@ -37,8 +37,11 @@ public sealed class DMTests : ContentUnitTest {
     public void OneTimeSetup() {
         IoCManager.InjectDependencies(this);
         _taskManager.Initialize();
-        Compile(InitializeEnvironment);
-        _dreamMan.PreInitialize(Path.ChangeExtension(InitializeEnvironment, "json"));
+        var compilationResult = Compile(InitializeEnvironment);
+        if (compilationResult == null) {
+            throw new Exception($"Test setup failed, compilation failed with {DMCompiler.DMCompiler.ErrorCount} errors.\n{string.Join("\n", DMCompiler.DMCompiler.Emissions)}");
+        }
+        _dreamMan.PreInitialize(compilationResult);
         _dreamMan.OnException += OnException;
     }
 
