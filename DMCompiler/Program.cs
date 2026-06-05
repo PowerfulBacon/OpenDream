@@ -28,22 +28,22 @@ internal static class Program {
     /// <summary> Helper for TryParseArguments(), to turn the arg array into something better-parsed.</summary>
     private static IEnumerable<Argument> StringArrayToArguments(string[] args) {
         List<Argument> retArgs = new(args.Length);
-        for(var i = 0; i < args.Length;i+=1) {
+        for (var i = 0; i < args.Length; i += 1) {
             var firstString = args[i];
-            if(string.IsNullOrWhiteSpace(firstString)) // Is this possible? I don't even know. (IsNullOrWhiteSpace also checks if the string is empty, btw)
+            if (string.IsNullOrWhiteSpace(firstString)) // Is this possible? I don't even know. (IsNullOrWhiteSpace also checks if the string is empty, btw)
                 continue;
-            if(!firstString.StartsWith('-')) { // If it's a value-only argument
+            if (!firstString.StartsWith('-')) { // If it's a value-only argument
                 retArgs.Add(new Argument { Value = firstString });
                 continue;
             }
 
             firstString = firstString.TrimStart('-');
             var split = firstString.Split('=');
-            if(split.Length == 1) { // If it's a name-only argument
-                if(firstString == "define" && i + 1 < args.Length) { // Weird snowflaking to make our define syntax work
-                    i+=1;
-                    if(!args[i].StartsWith("--")) { // To make the error make a schmidge more sense
-                        retArgs.Add(new Argument {Name = firstString, Value = args[i] });
+            if (split.Length == 1) { // If it's a name-only argument
+                if (firstString == "define" && i + 1 < args.Length) { // Weird snowflaking to make our define syntax work
+                    i += 1;
+                    if (!args[i].StartsWith("--")) { // To make the error make a schmidge more sense
+                        retArgs.Add(new Argument { Name = firstString, Value = args[i] });
                     }
                 }
 
@@ -78,6 +78,7 @@ internal static class Program {
         Console.WriteLine("--verbose                 : Show verbose output during compile");
         Console.WriteLine("--notices-enabled         : Show notice output during compile");
         Console.WriteLine("--no-opts                 : Makes the compiler emit raw unoptimized bytecode. Mainly for debugging/testing purposes. User code will be slower at runtime.");
+        Console.WriteLine("--debug-server            : Launches as a debug server, which will watch the directory of the DME file for updates and trigger compilations when changes are detected.");
     }
 
     private static bool TryParseArguments(DMCompiler compiler, string[] args, out DMCompilerSettings settings) {
@@ -120,8 +121,8 @@ internal static class Program {
                     settings.NoticesEnabled = true;
                     break;
                 case "version": {
-                    if(arg.Value is null) {
-                        if(skipBad) {
+                    if (arg.Value is null) {
+                        if (skipBad) {
                             compiler.ForcedWarning("Compiler arg 'version' requires a full BYOND build (e.g. --version=514.1584), skipping");
                             continue;
                         }
@@ -132,7 +133,7 @@ internal static class Program {
 
                     var split = arg.Value.Split('.', StringSplitOptions.RemoveEmptyEntries);
                     if (split.Length != 2 || !int.TryParse(split[0], out _) || !int.TryParse(split[1], out _)) { // We want to make sure that they *are* ints but the preprocessor takes strings
-                        if(skipBad) {
+                        if (skipBad) {
                             compiler.ForcedWarning("Compiler arg 'version' requires a full BYOND build (e.g. --version=514.1584), skipping");
                             continue;
                         }
@@ -170,6 +171,9 @@ internal static class Program {
                 case "no-opts":
                     settings.NoOpts = true;
                     break;
+                case "debug-server":
+                    settings.DebugServer = true;
+                    break;
                 default: {
                     if (skipBad) {
                         compiler.ForcedWarning($"Unknown compiler arg '{arg.Name}', skipping");
@@ -187,7 +191,7 @@ internal static class Program {
             return false;
         }
 
-        foreach(var file in settings.Files) {
+        foreach (var file in settings.Files) {
             Console.WriteLine($"Compiling {Path.GetFileName(file)} on {settings.DMVersion}.{settings.DMBuild}");
         }
 
